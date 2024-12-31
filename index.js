@@ -31,12 +31,40 @@ const run = async () => {
       const count = req.query.count;
       const size = req.query.size;
       const page = req.query.page;
+      const category = req.query.category;
+      const search = req.query.search || "";
+      const categoryCount = req.query.categoryCount;
+      const searchCount = req.query.searchCount;
+      // console.log(req.query);
+      let query = {};
+      if (category) {
+        query.category = category;
+      }
+      if (search) {
+        console.log(search);
+        query.name = { $regex: search, $options: "i" };
+      }
+      console.log({ searchCount, search });
+      if (searchCount == "true" && search) {
+        console.log("object");
+        const result = await dishesCollection.countDocuments({
+          name: { $regex: search, $options: "i" },
+        });
+        console.log("searchcount", result);
+        return res.json({ searchCount: result });
+      }
+      if (categoryCount) {
+        const result = await dishesCollection.countDocuments({
+          category: categoryCount,
+        });
+        return res.json({ categoryCount: result });
+      }
       if (count) {
         const result = await dishesCollection.estimatedDocumentCount();
         return res.json({ count: result });
       }
       const result = await dishesCollection
-        .find()
+        .find(query)
         .limit(parseInt(size))
         .skip(page * size)
         .toArray();
