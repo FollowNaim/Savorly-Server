@@ -35,34 +35,35 @@ const run = async () => {
       const search = req.query.search || "";
       const categoryCount = req.query.categoryCount;
       const searchCount = req.query.searchCount;
-      // console.log(req.query);
       let query = {};
+      // if category availabe then added category to query
       if (category) {
         query.category = category;
       }
+      // if search available then added search to query based on product name
       if (search) {
-        console.log(search);
         query.name = { $regex: search, $options: "i" };
       }
-      console.log({ searchCount, search });
+      // if searchcount and search true that means it will count total searched data and create pagination dynamic based on count
       if (searchCount == "true" && search) {
-        console.log("object");
         const result = await dishesCollection.countDocuments({
           name: { $regex: search, $options: "i" },
         });
-        console.log("searchcount", result);
         return res.json({ searchCount: result });
       }
+      // if categoryCount true then it will count the data based on category i passed
       if (categoryCount) {
         const result = await dishesCollection.countDocuments({
           category: categoryCount,
         });
         return res.json({ categoryCount: result });
       }
+      // if count is true then it will coung all data available on collection
       if (count) {
         const result = await dishesCollection.estimatedDocumentCount();
         return res.json({ count: result });
       }
+      // default pagination
       const result = await dishesCollection
         .find(query)
         .limit(parseInt(size))
